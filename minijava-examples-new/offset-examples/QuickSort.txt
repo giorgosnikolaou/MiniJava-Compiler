@@ -1,0 +1,10 @@
+-----------Class QS-----------
+--Variables---
+QS.number : 0
+QS.size : 8
+---Methods---
+QS.Start : 0
+QS.Sort : 8
+QS.Print : 16
+QS.Init : 24
+

@@ -1,0 +1,10 @@
+-----------Class BBS-----------
+--Variables---
+BBS.number : 0
+BBS.size : 8
+---Methods---
+BBS.Start : 0
+BBS.Sort : 8
+BBS.Print : 16
+BBS.Init : 24
+

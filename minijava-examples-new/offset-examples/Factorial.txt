@@ -1,0 +1,5 @@
+-----------Class Fac-----------
+--Variables---
+---Methods---
+Fac.ComputeFac : 0
+

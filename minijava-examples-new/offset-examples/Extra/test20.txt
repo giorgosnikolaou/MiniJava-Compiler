@@ -1,0 +1,22 @@
+-----------Class A23-----------
+--Variables---
+A23.i1 : 0
+A23.i2 : 4
+A23.i3 : 8
+---Methods---
+A23.init : 0
+A23.getI1 : 8
+A23.setI1 : 16
+
+-----------Class B23-----------
+--Variables---
+B23.i1 : 12
+B23.i4 : 16
+---Methods---
+
+-----------Class C23-----------
+--Variables---
+C23.i1 : 20
+C23.i5 : 24
+---Methods---
+

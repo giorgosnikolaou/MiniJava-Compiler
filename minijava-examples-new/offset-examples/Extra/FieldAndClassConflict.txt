@@ -1,0 +1,11 @@
+-----------Class A-----------
+--Variables---
+A.A : 0
+---Methods---
+A.B : 0
+
+-----------Class B-----------
+--Variables---
+B.A : 0
+---Methods---
+

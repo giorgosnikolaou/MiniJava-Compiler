@@ -1,0 +1,16 @@
+-----------Class A-----------
+--Variables---
+A.data : 0
+---Methods---
+A.get : 0
+
+-----------Class B-----------
+--Variables---
+---Methods---
+B.set : 8
+
+-----------Class C-----------
+--Variables---
+---Methods---
+C.reset : 16
+

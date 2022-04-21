@@ -1,0 +1,14 @@
+-----------Class ArrayTest-----------
+--Variables---
+ArrayTest.weee : 0
+ArrayTest.wre : 4
+ArrayTest.aaa : 8
+---Methods---
+ArrayTest.test : 0
+
+-----------Class B-----------
+--Variables---
+B.aaa : 12
+B.we : 16
+---Methods---
+

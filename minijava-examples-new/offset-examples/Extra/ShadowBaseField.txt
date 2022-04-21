@@ -1,0 +1,11 @@
+-----------Class A-----------
+--Variables---
+A.x : 0
+---Methods---
+A.getX : 0
+
+-----------Class B-----------
+--Variables---
+Β.x : 4
+---Methods---
+

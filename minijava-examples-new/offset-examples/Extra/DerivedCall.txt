@@ -1,0 +1,15 @@
+-----------Class A-----------
+--Variables---
+A.a : 0
+---Methods---
+
+-----------Class B-----------
+--Variables---
+B.b : 4
+---Methods---
+
+-----------Class F-----------
+--Variables---
+---Methods---
+F.foo : 0
+

@@ -1,0 +1,35 @@
+-----------Class Element-----------
+--Variables---
+Element.Age : 0
+Element.Salary : 4
+Element.Married : 8
+---Methods---
+Element.Init : 0
+Element.GetAge : 8
+Element.GetSalary : 16
+Element.GetMarried : 24
+Element.Equal : 32
+Element.Compare : 40
+
+-----------Class List-----------
+--Variables---
+List.elem : 0
+List.next : 8
+List.end : 16
+---Methods---
+List.Init : 0
+List.InitNew : 8
+List.Insert : 16
+List.SetNext : 24
+List.Delete : 32
+List.Search : 40
+List.GetEnd : 48
+List.GetElem : 56
+List.GetNext : 64
+List.Print : 72
+
+-----------Class LL-----------
+--Variables---
+---Methods---
+LL.Start : 0
+

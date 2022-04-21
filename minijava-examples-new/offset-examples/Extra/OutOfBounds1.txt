@@ -1,0 +1,5 @@
+-----------Class A-----------
+--Variables---
+---Methods---
+A.run : 0
+
