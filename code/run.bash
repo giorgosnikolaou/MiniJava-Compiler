@@ -21,4 +21,4 @@ done
 
 rm -f *.class *~ MiniJavaParser.java MiniJavaParserConstants.java MiniJavaParserTokenManager.java ParseException.java Token.java TokenMgrError.java minijava-jtb.jj JavaCharStream.java
 rm -f SymbolTable/*.class
-# rm -r visitor syntaxtree
+rm -r visitor syntaxtree
