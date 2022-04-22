@@ -22,31 +22,33 @@ public class Main {
 
             Goal root = parser.Goal();
 
-            System.out.println("Program parsed successfully.");
+            System.err.println("Program parsed successfully.");
             
             SymbolTable st = new SymbolTable();
             PopulatingVisitor pop = new PopulatingVisitor(st);
             root.accept(pop, null);
 
             // st.print();
-            
 
             AnalysisVisitor anal = new AnalysisVisitor(st);
             root.accept(anal, null);
 
-            System.out.println("Program is semantically correct at this point.");
+            System.err.println("Program is semantically correct at this point.");
 
             // Need to build the vtable
 
         }
         catch(ParseException ex){
             System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+            System.out.println("PARSE ERROR");
         }
         catch(FileNotFoundException ex){
             System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+            System.out.println("IO ERROR");
         }
         catch(Exception ex){
-            System.err.println("==========================================\n- " + ex.getMessage() + "\n==========================================");
+            System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+            System.out.println("SC ERROR");
         }
         finally{
             try{
@@ -54,6 +56,7 @@ public class Main {
             }
             catch(IOException ex){
                 System.err.println(ex.getMessage());
+                System.out.println("IO ERROR");
             }
         }
     }
