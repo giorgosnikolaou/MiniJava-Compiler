@@ -5,6 +5,7 @@ public class Function {
     // Function name
     private final String name;
     private final String type;
+    private final int offset;
 
     
     private List<Variable> arguments = new ArrayList<Variable>();
@@ -16,6 +17,14 @@ public class Function {
     {
         name = _name;
         type = _type;
+        offset = -1;
+    }
+
+    Function(String _name, String _type, int _offset)
+    {
+        name = _name;
+        type = _type;
+        offset = _offset;
     }
 
     public String name()
@@ -26,6 +35,11 @@ public class Function {
     public String type()
     {
         return type;
+    }
+
+    public int offset()
+    {
+        return offset;
     }
 
     public int args_size()

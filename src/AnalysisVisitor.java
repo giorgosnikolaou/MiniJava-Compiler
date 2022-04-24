@@ -86,12 +86,12 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
                 );
     }
 
-    private boolean is_subclass(String cl, String sub)
+    private boolean is_subclass(String _class, String sub)
     {
-        if (!is_class(cl) || !is_class(sub))
+        if (!is_class(_class) || !is_class(sub))
             return false;
 
-        return st.is_subclass(cl, sub);
+        return st.is_subclass(_class, sub);
     }
 
     private boolean type_matching(String type1, String type2)
@@ -124,8 +124,19 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
 
 
     @Override
-	public String visit(IntegerLiteral n, String argu) 
+	public String visit(IntegerLiteral n, String argu) throws Exception
     {
+        String num = n.f0.tokenImage;
+        
+        try
+        {
+            Integer.parseInt(num);
+        }
+        catch (Exception e) 
+        {
+            throw new Exception("Number " + num + " is outside of integer range");
+        }
+        
 		return "int";
 	}
 
@@ -169,34 +180,44 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     public String visit(Identifier n, String argu) throws Exception
     {
         return n.f0.toString();
-        // return st.resolve_type(n.f0.toString(), argu);
+        // return st.resolve_var_type(n.f0.toString(), argu);
     }
 
     @Override
     public String visit(PrimaryExpression n, String argu) throws Exception 
     {
         String _ret = n.f0.accept(this, argu);
-        return n.f0.which == 3 ? st.resolve_type(_ret, argu) : _ret;
+        return n.f0.which == 3 ? st.resolve_var_type(_ret, argu) : _ret;
     }
 
     @Override
     public String visit(ThisExpression n, String argu)
     {
         String[] scope = argu.split(st.class_delimiter);
-        Class cl = st.get_class(scope[0]);
+        Class _class = st.get_class(scope[0]);
 
-        return cl.name();
+        return _class.name();
     }
 
     @Override
-    public String visit(BooleanArrayAllocationExpression n, String argu) 
+    public String visit(BooleanArrayAllocationExpression n, String argu) throws Exception 
     {
+        String type = n.f3.accept(this, argu);
+
+        if (!is_int(type))
+            throw new Exception("Size on allocation of array should be an integer");
+
         return "boolean[]";
     }
 
     @Override
-    public String visit(IntegerArrayAllocationExpression n, String argu) 
+    public String visit(IntegerArrayAllocationExpression n, String argu) throws Exception 
     {
+        String type = n.f3.accept(this, argu);
+
+        if (!is_int(type))
+            throw new Exception("Size on allocation of array should be an integer");
+
         return "int[]";
     }
 
@@ -213,8 +234,13 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     }
 
     @Override
-    public String visit(NotExpression n, String argu) 
+    public String visit(NotExpression n, String argu) throws Exception
     {
+        String type = n.f1.accept(this, argu);
+
+        if (!is_boolean(type))
+            throw new Exception("Can only negate boolean values");
+
         return "boolean";
     }
 
@@ -318,10 +344,10 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     {
         String name = n.f2.accept(this, argu);
 
-        Class cl = st.get_class(argu);
+        Class _class = st.get_class(argu);
         
-        Function new_function = cl.get_function(name);
-        Function inherited = st.get_function(cl.superclass(), name);
+        Function new_function = _class.get_function(name);
+        Function inherited = st.get_function(_class.superclass(), name);
 
         if (inherited != null)
         {
@@ -374,7 +400,7 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(AssignmentStatement n, String argu) throws Exception 
     {
-        String type = st.resolve_type(n.f0.accept(this, argu), argu);
+        String type = st.resolve_var_type(n.f0.accept(this, argu), argu);
         String expr_type = n.f2.accept(this, argu);
         
         if (!type_matching(type, expr_type))
@@ -396,7 +422,7 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(ArrayAssignmentStatement n, String argu) throws Exception 
     {
-        String type = st.resolve_type(n.f0.accept(this, argu), argu);
+        String type = st.resolve_var_type(n.f0.accept(this, argu), argu);
         String index_type = n.f2.accept(this, argu);
         String expr_type = n.f5.accept(this, argu);
 

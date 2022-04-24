@@ -35,20 +35,22 @@ public class Main {
 
             System.err.println("Program is semantically correct at this point.");
 
-            // Need to build the vtable
+            // Need to print offsets
+
+            st.print_offsets();
 
         }
         catch(ParseException ex){
             System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
-            System.out.println("PARSE ERROR");
+            System.err.println("PARSE ERROR");
         }
         catch(FileNotFoundException ex){
             System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
-            System.out.println("IO ERROR");
+            System.err.println("IO ERROR");
         }
         catch(Exception ex){
             System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
-            System.out.println("SC ERROR");
+            System.err.println("SC ERROR");
         }
         finally{
             try{
@@ -56,7 +58,7 @@ public class Main {
             }
             catch(IOException ex){
                 System.err.println(ex.getMessage());
-                System.out.println("IO ERROR");
+                System.err.println("IO ERROR");
             }
         }
     }

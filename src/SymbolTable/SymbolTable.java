@@ -4,7 +4,7 @@ import java.util.*;
 public class SymbolTable {
 
     public final String class_delimiter = "::";
-    private Map<String, Class> classes = new HashMap<String, Class>();
+    private Map<String, Class> classes = new LinkedHashMap<String, Class>();
 
     public void add_class(String _class, String _super) throws Exception 
     {
@@ -14,7 +14,7 @@ public class SymbolTable {
         if (_super != null && !classes.containsKey(_super))
             throw new Exception("Class " + _super + " does not exists, hence cannot inherit from it");
         
-        classes.put(_class, new Class(_class, _super));
+        classes.put(_class, _super == null ? new Class(_class) : new Class(_class, get_class(_super)));
 
     }
 
@@ -41,16 +41,16 @@ public class SymbolTable {
         return classes.containsKey(name);
     }
 
-    // Checks if cl is a superclass of sub
-    // Returns false if cl == sub 
-    public boolean is_subclass(String cl, String sub)
+    // Checks if _class is a superclass of _subclass
+    // Returns false if _class == _subclass 
+    public boolean is_subclass(String _class, String _subclass)
     {
-        if (sub == null)
+        if (_subclass == null)
             return false;
 
-        Class info = classes.get(sub);
+        Class info = classes.get(_subclass);
         String super_name = info.superclass();
-        return cl.equals(super_name) ? true : is_subclass(cl, super_name);
+        return _class.equals(super_name) ? true : is_subclass(_class, super_name);
 
     }
 
@@ -60,15 +60,15 @@ public class SymbolTable {
         if (class_name == null)
             return null;
         
-        Class cl = classes.get(class_name);
-        Function _ret = cl.get_function(name);
+        Class _class = classes.get(class_name);
+        Function _ret = _class.get_function(name);
 
         return  _ret == null 
-                ? get_function(cl.superclass(), name) : _ret; 
+                ? get_function(_class.superclass(), name) : _ret; 
     }
     
     
-    public String resolve_type(String name, String scope) throws Exception
+    public String resolve_var_type(String name, String scope) throws Exception
     {
         // System.out.println("Searching " + name + " on " + scope);
         if (scope == null)
@@ -77,12 +77,12 @@ public class SymbolTable {
 
         String[] terms = scope.split(class_delimiter);
 
-        Class cl = get_class(terms[0]);
+        Class _class = get_class(terms[0]);
 
 
         if (terms.length == 2)
         {
-            Function fun = cl.get_function(terms[1]);
+            Function fun = _class.get_function(terms[1]);
 
             Variable var = fun.get_variable(name);
 
@@ -90,11 +90,29 @@ public class SymbolTable {
                 return var.type();
         }
 
-        Variable var = cl.get_variable(name);
+        Variable var = _class.get_variable(name);
 
-        return var != null ? var.type() : resolve_type(name, cl.superclass());
+        return var != null ? var.type() : resolve_var_type(name, _class.superclass());
     }
 
+
+    public String superclass(String _class) throws Exception
+    {
+        Class cl = get_class(_class);
+        if (cl == null)
+            throw new Exception("Class " + _class + " hasn't been declared");
+        
+        return cl.superclass();
+    }
     
+    public void print_offsets()
+    {
+        for (Map.Entry<String, Class> entry : classes.entrySet()) 
+        {
+            Class _class = entry.getValue();   
+            _class.print_offsets(get_class(_class.superclass()));
+            // System.out.println();
+        }
+    }
 
 }

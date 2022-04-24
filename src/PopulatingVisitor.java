@@ -46,12 +46,12 @@ public class PopulatingVisitor extends GJDepthFirst<String,String> {
         
         st.add_class(class_name, null);
 
-        Class cl = st.get_class(class_name);
-        cl.add_function("main", "void");
+        Class _class = st.get_class(class_name);
+        _class.add_function("main", "void");
 
         String arg_name = n.f11.accept(this, argu);
 
-        Function main = cl.get_function("main");
+        Function main = _class.get_function("main");
         main.add_argument(arg_name, "String[]");
 
         n.f14.accept(this, class_name + st.class_delimiter + "main");
@@ -126,10 +126,10 @@ public class PopulatingVisitor extends GJDepthFirst<String,String> {
         String type = n.f1.accept(this, argu);
         String name = n.f2.accept(this, argu);
 
-        Class cl = st.get_class(argu);
-        cl.add_function(name, type);
+        Class _class = st.get_class(argu);
+        _class.add_function(name, type, st.get_function(_class.superclass(), name) != null);
 
-        Function fun = cl.get_function(name);
+        Function fun = _class.get_function(name);
 
         if (n.f4.present())
         {
@@ -252,12 +252,12 @@ public class PopulatingVisitor extends GJDepthFirst<String,String> {
         // names[1] method_name 
 		String[] names = argu.split(st.class_delimiter);
 
-        Class cl = st.get_class(names[0]);
+        Class _class = st.get_class(names[0]);
         
         if (names.length == 1)
-            cl.add_variable(name, type);
+            _class.add_variable(name, type);
         else
-            (cl.get_function(names[1])).add_variable(name, type);
+            (_class.get_function(names[1])).add_variable(name, type);
 
 		return null;
 	}
