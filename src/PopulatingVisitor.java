@@ -44,7 +44,7 @@ public class PopulatingVisitor extends GJDepthFirst<String,String> {
    {
         String class_name = n.f1.accept(this, argu);
         
-        st.add_class(class_name, null);
+        st.add_class(class_name);
 
         Class _class = st.get_class(class_name);
         _class.add_function("main", "void");

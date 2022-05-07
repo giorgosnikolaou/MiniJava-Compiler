@@ -5,6 +5,7 @@ public class SymbolTable {
 
     public final String class_delimiter = "::";
     private Map<String, Class> classes = new LinkedHashMap<String, Class>();
+    private Class main_class;
 
     public void add_class(String _class, String _super) throws Exception 
     {
@@ -16,6 +17,15 @@ public class SymbolTable {
         
         classes.put(_class, _super == null ? new Class(_class) : new Class(_class, get_class(_super)));
 
+    }
+
+    public void add_class(String _class) throws Exception 
+    {
+        if (classes.containsKey(_class))
+            throw new Exception("Duplicate class name: " + _class);
+
+        main_class = new Class(_class);
+        classes.put(_class, main_class);
     }
 
     // Returns the Class object with name _class or null if one does not exist
@@ -109,9 +119,16 @@ public class SymbolTable {
     {
         for (Map.Entry<String, Class> entry : classes.entrySet()) 
         {
-            Class _class = entry.getValue();   
+            Class _class = entry.getValue(); 
+            
+            if (_class == main_class)
+                continue;
+            
+            System.out.println("-----------Class " + _class.name() + "-----------");
+            
             _class.print_offsets(get_class(_class.superclass()));
-            // System.out.println();
+
+            System.out.println();
         }
     }
 

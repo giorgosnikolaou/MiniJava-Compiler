@@ -101,7 +101,7 @@ public class Class {
 
     public void print_offsets(Class _super)
     {
-
+        System.out.println("--Variables---");
         for (Map.Entry<String, Variable> entry : variables.entrySet())
         {
             Variable var = entry.getValue();
@@ -112,6 +112,7 @@ public class Class {
                 System.out.println(name + "." + var.name() + " : " + offset);
         }
 
+        System.out.println("---Methods---");
         for (Map.Entry<String, Function> entry : functions.entrySet())
         {
             Function func = entry.getValue();
