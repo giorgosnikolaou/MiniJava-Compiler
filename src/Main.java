@@ -8,6 +8,7 @@ import java.io.IOException;
 import SymbolTable.SymbolTable;
 
 public class Main {
+    private static final String eq = "====================================================================================";
     public static void main(String[] args) throws Exception {
         if(args.length < 1){
             System.err.println("Usage: java Main <inputFile1> <inputFile2> ... <inputFileN>");
@@ -16,6 +17,7 @@ public class Main {
 
         for (String arg : args)
         {
+            System.err.println("\nFile: " + arg);
             FileInputStream fis = null;
             try{
                 fis = new FileInputStream(arg);
@@ -41,15 +43,15 @@ public class Main {
 
             }
             catch(ParseException ex){
-                System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+                System.err.println(eq + "\n" + ex.getMessage() + "\n" + eq);
                 System.err.println("PARSE ERROR");
             }
             catch(FileNotFoundException ex){
-                System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+                System.err.println(eq + "\n" + ex.getMessage() + "\n" + eq);
                 System.err.println("IO ERROR");
             }
             catch(Exception ex){
-                System.err.println("==========================================\n" + ex.getMessage() + "\n==========================================");
+                System.err.println(eq + "\n" + ex.getMessage() + "\n" + eq);
                 System.err.println("SC ERROR");
             }
             finally{
@@ -66,3 +68,12 @@ public class Main {
         
     }
 }
+
+
+
+
+
+
+
+
+

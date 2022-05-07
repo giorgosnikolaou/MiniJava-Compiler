@@ -1,5 +1,8 @@
 package SymbolTable;
 
+// Represents a variable named 'name' and of type 'type'
+// 'offset' has the value of the offset as per the assignment 
+
 public class Variable {
     private final String name;
     private final String type;
@@ -34,11 +37,13 @@ public class Variable {
         return offset;
     }
 
+    // Debugging purposes
     public void print()
     {
         print("");
     }
-
+    
+    // Debugging purposes
     public void print(String pref)
     {
         System.out.println(pref + "V: " + type + " " + name);

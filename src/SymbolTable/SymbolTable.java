@@ -73,14 +73,14 @@ public class SymbolTable {
         Class _class = classes.get(class_name);
         Function _ret = _class.get_function(name);
 
-        return  _ret == null 
-                ? get_function(_class.superclass(), name) : _ret; 
+        return  _ret == null ? get_function(_class.superclass(), name) : _ret; 
     }
     
     
+    // Finds variable in scope 'scope' (recursively for inheritence and function of class) and returns the type of variable with name 'name' 
+    // If variable doesn't exists within the scope throws Exception
     public String resolve_var_type(String name, String scope) throws Exception
     {
-        // System.out.println("Searching " + name + " on " + scope);
         if (scope == null)
             throw new Exception("Couldn't resolve " + name);
         
@@ -88,7 +88,6 @@ public class SymbolTable {
         String[] terms = scope.split(class_delimiter);
 
         Class _class = get_class(terms[0]);
-
 
         if (terms.length == 2)
         {
@@ -106,15 +105,19 @@ public class SymbolTable {
     }
 
 
+    // Returns the class which '_class' extends
+    // Throws Exception if '_class' doesn't exists 
     public String superclass(String _class) throws Exception
     {
         Class cl = get_class(_class);
+
         if (cl == null)
             throw new Exception("Class " + _class + " hasn't been declared");
         
         return cl.superclass();
     }
     
+
     public void print_offsets()
     {
         for (Map.Entry<String, Class> entry : classes.entrySet()) 

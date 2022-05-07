@@ -1,6 +1,9 @@
 package SymbolTable;
 import java.util.*;
 
+// Represents a function named 'name' and of return type 'type'
+// 'offset' has the value of the offset as per the assignment 
+
 public class Function {
     // Function name
     private final String name;
@@ -98,11 +101,13 @@ public class Function {
         return variables.get(_name);
     }
 
+    // Debugging purposes
     public void print()
     {
         print("");
     }
     
+    // Debugging purposes
     public void print(String pref)
     {
         System.out.print(pref + "F: " + type + " " + name + "( ");

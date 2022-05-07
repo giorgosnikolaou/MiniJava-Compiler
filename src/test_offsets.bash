@@ -11,6 +11,9 @@ directory_default="../tests/examples/offset-results/"
 
 directory=$([[ $# -eq 0 ]] && echo ${directory_default} || echo "$1")
 
+if [[ $# -eq 2 ]]; then 
+    directory_java=$(echo "$2")
+fi
 
 GREEN='\033[1;32m'
 RED='\033[1;31m'

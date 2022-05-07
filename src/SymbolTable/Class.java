@@ -1,6 +1,9 @@
 package SymbolTable;
 import java.util.*;
 
+// Represent a class named 'name' extending class with name 'super_name' (field is null if it does not extend a class)
+// 'offset_var' and 'offset_func' are essentially a counter, if a new variable or function comes it will have that offset,
+// to know where we are when populating the symbol table
 
 public class Class {
     // Class name
@@ -85,6 +88,7 @@ public class Class {
         return variables.containsKey(_name) ? variables.get(_name) : null; 
     }
 
+    // Debugging purposes 
     public void print()
     {
         System.out.println(super_name != null ? " extends " + super_name : "");

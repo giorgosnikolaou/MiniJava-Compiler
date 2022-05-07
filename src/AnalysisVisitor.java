@@ -126,7 +126,7 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
     @Override
 	public String visit(IntegerLiteral n, String argu) throws Exception
     {
-        String num = n.f0.tokenImage;
+        String num = n.f0.toString();
         
         try
         {
