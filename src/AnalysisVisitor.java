@@ -661,7 +661,7 @@ public class AnalysisVisitor extends GJDepthFirst<String,String> {
             throw new Exception("Function " + fun + " doesn't exist on the scope of clas " + type);
 
         if (!compatable_types(args, f.get_arguments_types()))
-            throw new Exception("Calling function with mismached arguments\n" + args + "\n");
+            throw new Exception("Calling function with mismached arguments\n" + args + "\n" + f.get_arguments_types() + "\n");
 
         return f.type();
     }

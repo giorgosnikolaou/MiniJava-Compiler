@@ -45,5 +45,5 @@ Number of arguments can be 0, 1 or 2  </br>
 2 arguments -> first argument same as above, second argument path for the directory with the inpout MiniJava files
 
 * `./test_sc.bash <path to MiniJava.java dir>` </br>
-Performs semantic analysis on all the .java files of the given directory (if the defualt one if none is given) </br>
+Performs semantic analysis on all the .java files of the given directory (defualt one if none is given) </br>
 Stops if it encounters an unexpected behavior (eg an error occured/didn't occur when it shouldn't have/should have occured)

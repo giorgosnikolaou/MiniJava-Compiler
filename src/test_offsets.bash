@@ -42,6 +42,6 @@ done
 echo ""
 
 # Remove produced files
-rm -f *.class *~ MiniJavaParser.java MiniJavaParserConstants.java MiniJavaParserTokenManager.java ParseException.java Token.java TokenMgrError.java JavaCharStream.java
+rm -f *.class *~ MiniJavaParser* Token* ParseException.java JavaCharStream.java ../libs/minijava-jtb.jj
 rm -f SymbolTable/*.class error_type offsets
 rm -r visitor syntaxtree
