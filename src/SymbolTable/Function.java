@@ -77,6 +77,11 @@ public class Function {
         return _ret;
     }
 
+    public List<Variable> get_arg_info()
+    {
+        return arguments;
+    }
+
     public void add_argument(String _name, String _type) throws Exception 
     {
         Variable arg = new Variable(_name, _type);

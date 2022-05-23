@@ -20,6 +20,9 @@ public class Class {
     // name, info
     private Map<String, Variable> variables = new LinkedHashMap<String, Variable>();
 
+    public Map<String, String> vtable = new LinkedHashMap<String, String>();
+
+
     Class(String _class)
     {
         name = _class;
@@ -32,7 +35,9 @@ public class Class {
         super_name = _super.name; 
         offset_var = _super.offset_var;
         offset_func = _super.offset_func;
-        // System.err.println(_class + " " + offset_var + " " + offset_func + "\n");
+
+        // Copy vtable from super if one exists  
+        vtable.putAll(_super.vtable);
     }
 
     public String name()
@@ -55,6 +60,8 @@ public class Class {
 
     public void add_function(String _name, String _type, boolean overwriting) throws Exception 
     {
+        vtable.put(_name, name);
+
         if (overwriting == true)
         {
             add_function(_name, _type);
@@ -101,6 +108,11 @@ public class Class {
         for (Map.Entry<String, Variable> entry : variables.entrySet())
             entry.getValue().print("\t");
 
+        System.out.println("v_table");
+        for (Map.Entry<String, String> entry : vtable.entrySet())
+            System.out.println(entry.getValue() + "::" + entry.getKey());
+        
+        System.out.println();
     }
 
     public void print_offsets(Class _super)
@@ -131,5 +143,8 @@ public class Class {
 
 
     }
+
+
+    
 
 }

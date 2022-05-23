@@ -4,7 +4,7 @@ import java.util.*;
 public class SymbolTable {
 
     public final String class_delimiter = "::";
-    private Map<String, Class> classes = new LinkedHashMap<String, Class>();
+    public Map<String, Class> classes = new LinkedHashMap<String, Class>();
     private Class main_class;
 
     public void add_class(String _class, String _super) throws Exception 

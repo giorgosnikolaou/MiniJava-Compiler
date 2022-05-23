@@ -37,9 +37,16 @@ public class Main {
 
                 System.err.println("Program is semantically correct.\n");
 
-                // Need to print offsets
+                
 
                 st.print_offsets();
+
+                st.print();
+                
+
+                IRVisitor ir = new IRVisitor(st);
+                root.accept(ir, null);
+                
 
             }
             catch(ParseException ex){
