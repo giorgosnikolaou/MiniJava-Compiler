@@ -1,6 +1,9 @@
 class llvm_test{
     public static void main(String[] args){
-        
+        int a;
+        A b;
+        boolean[] c;
+        b = new B();
     }
 }
 
@@ -11,13 +14,14 @@ class A
     int x;
     int[] a;
 
-    public int foo()
+    public int foo(int y)
     {
-        return 0;
+        return x + y;
     }
 
-    public int[] bar()
+    public int[] bar(A b)
     {
+        b = new A();
         return a;
     }
 
@@ -26,7 +30,7 @@ class A
 class B extends A
 {
     int y;
-    public int foo()
+    public int foo(int y)
     {
         return 1;
     }
@@ -40,8 +44,24 @@ class B extends A
 
 class C
 {
-    public int tez()
+    A c;
+    int k;
+    boolean kk;
+    public int tez(int a , int b, A d)
     {
-        return 1;
+        return a + b;
+    }
+    public boolean zet(int a, boolean l)
+    {
+        int b;
+        c = new B(); 
+        k = 0;
+        k = b;
+        k = a;
+        
+        kk = false;
+        kk = l;
+
+        return false;
     }
 }

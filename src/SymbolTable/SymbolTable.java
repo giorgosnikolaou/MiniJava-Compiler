@@ -104,6 +104,32 @@ public class SymbolTable {
         return var != null ? var.type() : resolve_var_type(name, _class.superclass());
     }
 
+    public boolean is_field(String name, String scope) throws Exception
+    {
+        if (scope == null)
+            throw new Exception("Couldn't resolve " + name);
+        
+
+        String[] terms = scope.split(class_delimiter);
+
+        Class _class = get_class(terms[0]);
+
+        if (terms.length == 2)
+        {
+            Function fun = _class.get_function(terms[1]);
+
+            Variable var = fun.get_variable(name);
+
+            if (var != null)
+                return false;
+            
+        }
+        
+        return true;
+
+    }
+    
+
 
     // Returns the class which '_class' extends
     // Throws Exception if '_class' doesn't exists 
