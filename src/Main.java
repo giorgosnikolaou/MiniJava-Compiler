@@ -39,9 +39,9 @@ public class Main {
 
                 
 
-                st.print_offsets();
+                // st.print_offsets();
 
-                st.print();
+                // st.print();
                 
 
                 IRVisitor ir = new IRVisitor(st);

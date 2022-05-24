@@ -2,8 +2,9 @@ class llvm_test{
     public static void main(String[] args){
         int a;
         A b;
-        boolean[] c;
+        int[] c;
         b = new B();
+        
     }
 }
 
@@ -54,6 +55,7 @@ class C
     public boolean zet(int a, boolean l)
     {
         int b;
+        b =12;
         c = new B(); 
         k = 0;
         k = b;

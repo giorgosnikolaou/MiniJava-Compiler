@@ -70,7 +70,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         Function _fun = fun_scope(_class, _name);
 
         emit("i8* bitcast (");
-        emit(get_size(_fun.type()) + "(i8*"); // return type, "this" argument
+        emit(get_size(_fun.type()) + " (i8*"); // return type, "this" argument
 
         for (Variable arg : _fun.get_arg_info())
             emit(", " + get_size(arg.type()));
@@ -237,7 +237,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | ClassExtendsDeclaration()
     */
     @Override
-   	public String visit(TypeDeclaration n, String argu) throws Exception {
+   	public String visit(TypeDeclaration n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -250,7 +251,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f5 -> "}"
     */
     @Override
-    public String visit(ClassDeclaration n, String argu) throws Exception {
+    public String visit(ClassDeclaration n, String argu) throws Exception
+    {
         
 		
         String class_name = n.f1.accept(this, argu);
@@ -270,7 +272,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f7 -> "}"
     */
     @Override
-    public String visit(ClassExtendsDeclaration n, String argu) throws Exception {
+    public String visit(ClassExtendsDeclaration n, String argu) throws Exception
+    {
         
         String class_name = n.f1.accept(this, argu);
         n.f6.accept(this, class_name);
@@ -284,7 +287,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> ";"
     */
     @Override
-    public String visit(VarDeclaration n, String argu) throws Exception {
+    public String visit(VarDeclaration n, String argu) throws Exception
+    {
         
 		
         String type = n.f0.accept(this, argu);
@@ -311,7 +315,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f12 -> "}"
     */
     @Override
-    public String visit(MethodDeclaration n, String argu) throws Exception {
+    public String visit(MethodDeclaration n, String argu) throws Exception
+    {
 		tab_count++;
 		// argu should have the class name 
         String type = n.f1.accept(this, argu);
@@ -330,10 +335,18 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         n.f8.accept(this, argu + st.class_delimiter + name);
 
         // ret reg below
-        n.f10.accept(this, argu);
-		
-		emit("\n}\n\n");
+        String _ret = n.f10.accept(this, argu + st.class_delimiter + name);
+
+        Class _class = st.get_class(argu);
+        Function _fun = _class.get_function(name);
+
+        emit("\n");
+        emit_tabs();
+		emit("ret " + get_size(_fun.type()) + (_ret.startsWith("_") ? " %" : " ") + _ret + "\n");
+
+		emit("}\n\n");
 		tab_count--;
+
         return null;
     }
 
@@ -342,7 +355,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> FormalParameterTail()
     */
     @Override
-    public String visit(FormalParameterList n, String argu) throws Exception {
+    public String visit(FormalParameterList n, String argu) throws Exception
+    {
         String ret = n.f0.accept(this, argu);
 
         if (n.f1 != null) 
@@ -356,7 +370,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> Identifier()
     */
     @Override
-    public String visit(FormalParameter n, String argu) throws Exception {
+    public String visit(FormalParameter n, String argu) throws Exception
+    {
         
         String type = n.f0.accept(this, argu);
         String name = n.f1.accept(this, argu);
@@ -372,7 +387,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> ( FormalParameterTerm() )*
     */
     @Override
-    public String visit(FormalParameterTail n, String argu) throws Exception {
+    public String visit(FormalParameterTail n, String argu) throws Exception
+    {
 		String _ret = "";
 
         for (Node node : n.f0.nodes) 
@@ -386,7 +402,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> FormalParameter()
     */
     @Override
-    public String visit(FormalParameterTerm n, String argu) throws Exception {
+    public String visit(FormalParameterTerm n, String argu) throws Exception
+    {
         return n.f1.accept(this, argu);
     }
 
@@ -397,7 +414,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | Identifier()
     */
     @Override
-    public String visit(Type n, String argu) throws Exception {
+    public String visit(Type n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -406,7 +424,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | IntegerArrayType()
     */
     @Override
-    public String visit(ArrayType n, String argu) throws Exception {
+    public String visit(ArrayType n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -416,8 +435,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> "]"
     */
     @Override
-    public String visit(BooleanArrayType n, String argu) throws Exception {
-        
+    public String visit(BooleanArrayType n, String argu) throws Exception
+    {
         return "boolean[]";
     }
 
@@ -427,8 +446,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> "]"
     */
     @Override
-    public String visit(IntegerArrayType n, String argu) throws Exception {
-        
+    public String visit(IntegerArrayType n, String argu) throws Exception
+    { 
 		return "int[]";
     }
 
@@ -436,7 +455,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> "boolean"
     */
     @Override
-    public String visit(BooleanType n, String argu) throws Exception {
+    public String visit(BooleanType n, String argu) throws Exception
+    {
         return "boolean";
     }
 
@@ -444,27 +464,56 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> "int"
     */
     @Override
-    public String visit(IntegerType n, String argu) throws Exception {
+    public String visit(IntegerType n, String argu) throws Exception
+    {
         return "int";
     }
 
-	private String load_field(String name, String _class)
+
+	private String load_field(String name, String _class, boolean rvlaue)
 	{
 		Class cl = st.get_class(_class);
 		Variable var = cl.get_variable(name);
+
 		int offset = var.offset() + 8; // add vtable 8
 		String size = get_size(var.type());
 
 		String _h1 = new_reg();
-		String _ret = new_reg();
+		String _h2 = new_reg();
 
 		emit_tabs();
-		emit("%" + _h1 + " = getelementptr i8, i8* %this, " + size + " " + offset + "\n");
+		emit("%" + _h1 + " = getelementptr i8, i8* %this, i32 " + offset + "\n");
 
 		emit_tabs();
-		emit("%" + _ret + " = bitcast i8* %" + _h1 + " to " + size + "*\n");
+		emit("%" + _h2 + " = bitcast i8* %" + _h1 + " to " + size + "*\n");
+		if (rvlaue)
+		{
 
-		return _ret;
+			String _ret = new_reg();
+			emit_tabs();
+			emit("%" + _ret + " = load " + size + ", " + size + "* %" + _h2 + "\n\n");
+
+			return _ret;
+		}
+		return _h2;
+	}
+
+	private String load_local(String name, String scope) throws Exception
+    {
+        String _ret = new_reg();
+        String type = st.resolve_var_type(name, scope);
+        String size = get_size(type);
+
+        emit_tabs();
+        emit("%" + _ret + " = load " + size + ", " + size + "* %" + name + "\n");
+        return _ret;
+    }
+
+	private void emit_variable(String size, String reg_cons, String name)
+	{
+		emit_tabs();
+		emit("store " + size + (reg_cons.startsWith("_") ? " %" : " ") + 
+			 reg_cons + ", " + size + "* %" + name + "\n\n");
 	}
 
     /**
@@ -474,36 +523,21 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f3 -> ";"
     */
     @Override
-    public String visit(AssignmentStatement n, String argu) throws Exception {
-        
+    public String visit(AssignmentStatement n, String argu) throws Exception
+    {
 		// argu should be the scope we in
 		// ie <class name> <class delimiter> <function name>
         String name = n.f0.accept(this, argu);
 		String type = st.resolve_var_type(name, argu);
 		String size = get_size(type);
 
-		
         String reg_cons = n.f2.accept(this, argu);
 		
-		// emit_tabs();
-		// emit(argu + "\n");
-		if (!st.is_field(name, argu))
-		{
-			emit_tabs();
-			emit("store " + size + (reg_cons.startsWith("_") ? " %" : " ") + 
-				 reg_cons + ", " + size + "* %" + name + "\n\n");
+		String reg = st.is_field(name, argu) ?
+                    load_field(name, argu.split(st.class_delimiter)[0], false) :
+                    name;
 
-			return null;
-		}
-
-		// case that lvalue is a field
-		
-		String reg = load_field(name, argu.split(st.class_delimiter)[0]);
-		emit_tabs();
-		emit("store " + size + (reg_cons.startsWith("_") ? " %" : " ") + 
-				reg_cons + ", " + size + "* %" + reg + "\n\n");
-
-
+		emit_variable(size, reg_cons, reg);
 
         return null;
     }
@@ -518,7 +552,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f6 -> ";"
     */
     @Override
-    public String visit(ArrayAssignmentStatement n, String argu) throws Exception {
+    public String visit(ArrayAssignmentStatement n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -540,7 +575,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f6 -> Statement()
     */
     @Override
-    public String visit(IfStatement n, String argu) throws Exception {
+    public String visit(IfStatement n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -560,7 +596,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f4 -> Statement()
     */
     @Override
-    public String visit(WhileStatement n, String argu) throws Exception {
+    public String visit(WhileStatement n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -578,7 +615,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f4 -> ";"
     */
     @Override
-    public String visit(PrintStatement n, String argu) throws Exception {
+    public String visit(PrintStatement n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -600,7 +638,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | Clause()
     */
     @Override
-    public String visit(Expression n, String argu) throws Exception {
+    public String visit(Expression n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -610,7 +649,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> Clause()
     */
     @Override
-    public String visit(AndExpression n, String argu) throws Exception {
+    public String visit(AndExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -624,7 +664,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> PrimaryExpression()
     */
     @Override
-    public String visit(CompareExpression n, String argu) throws Exception {
+    public String visit(CompareExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -632,18 +673,30 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         return _ret;
     }
 
+
+    private String emit_binary_expr(String left, String right, String code)
+    {
+        String _ret = new_reg();
+
+        emit_tabs();
+        emit("%" + _ret + " = " + code + " i32 " + 
+            (left.startsWith("_") ? "%" : "") + left + ", " +
+            (right.startsWith("_") ? "%" : "") + right + "\n\n");
+            
+        return _ret;
+    }
     /**
      * f0 -> PrimaryExpression()
     * f1 -> "+"
     * f2 -> PrimaryExpression()
     */
     @Override
-    public String visit(PlusExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
+    public String visit(PlusExpression n, String argu) throws Exception 
+    {
+        String reg_const1 = n.f0.accept(this, argu);
+        String reg_const2 = n.f2.accept(this, argu);
+
+        return emit_binary_expr(reg_const1, reg_const2, "add");
     }
 
     /**
@@ -652,12 +705,12 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> PrimaryExpression()
     */
     @Override
-    public String visit(MinusExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
+    public String visit(MinusExpression n, String argu) throws Exception
+    {
+        String reg_const1 = n.f0.accept(this, argu);
+        String reg_const2 = n.f2.accept(this, argu);
+
+        return emit_binary_expr(reg_const1, reg_const2, "sub");
     }
 
     /**
@@ -666,12 +719,12 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> PrimaryExpression()
     */
     @Override
-    public String visit(TimesExpression n, String argu) throws Exception {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
+    public String visit(TimesExpression n, String argu) throws Exception
+    {
+        String reg_const1 = n.f0.accept(this, argu);
+        String reg_const2 = n.f2.accept(this, argu);
+
+        return emit_binary_expr(reg_const1, reg_const2, "mul");
     }
 
     /**
@@ -681,7 +734,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f3 -> "]"
     */
     @Override
-    public String visit(ArrayLookup n, String argu) throws Exception {
+    public String visit(ArrayLookup n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -696,7 +750,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> "length"
     */
     @Override
-    public String visit(ArrayLength n, String argu) throws Exception {
+    public String visit(ArrayLength n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -713,7 +768,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f5 -> ")"
     */
     @Override
-    public String visit(MessageSend n, String argu) throws Exception {
+    public String visit(MessageSend n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -729,7 +785,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> ExpressionTail()
     */
     @Override
-    public String visit(ExpressionList n, String argu) throws Exception {
+    public String visit(ExpressionList n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -740,7 +797,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> ( ExpressionTerm() )*
     */
     @Override
-    public String visit(ExpressionTail n, String argu) throws Exception {
+    public String visit(ExpressionTail n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -749,7 +807,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> Expression()
     */
     @Override
-    public String visit(ExpressionTerm n, String argu) throws Exception {
+    public String visit(ExpressionTerm n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -761,9 +820,11 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | PrimaryExpression()
     */
     @Override
-    public String visit(Clause n, String argu) throws Exception {
+    public String visit(Clause n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
+
 
     /**
      * f0 -> IntegerLiteral()
@@ -776,15 +837,23 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     *       | BracketExpression()
     */
     @Override
-    public String visit(PrimaryExpression n, String argu) throws Exception {
-        return n.f0.accept(this, argu);
+    public String visit(PrimaryExpression n, String argu) throws Exception
+    {
+        String _ret = n.f0.accept(this, argu);
+		
+        return n.f0.which == 3 
+				? st.is_field(_ret, argu) ? 
+                    load_field(_ret, argu.split(st.class_delimiter)[0], true) : 
+                    "%" + load_local(_ret, argu) 
+				: _ret;
     }
 
     /**
      * f0 -> <INTEGER_LITERAL>
     */
     @Override
-    public String visit(IntegerLiteral n, String argu) throws Exception {
+    public String visit(IntegerLiteral n, String argu) throws Exception
+    {
         return n.f0.toString();
     }
 
@@ -792,7 +861,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> "true"
     */
     @Override
-    public String visit(TrueLiteral n, String argu) throws Exception {
+    public String visit(TrueLiteral n, String argu) throws Exception
+    {
         return "1";
     }
 
@@ -800,7 +870,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> "false"
     */
     @Override
-    public String visit(FalseLiteral n, String argu) throws Exception {
+    public String visit(FalseLiteral n, String argu) throws Exception
+    {
         return "0";
     }
 
@@ -808,7 +879,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> <IDENTIFIER>
     */
     @Override
-    public String visit(Identifier n, String argu) throws Exception {
+    public String visit(Identifier n, String argu) throws Exception
+    {
         return n.f0.toString();
     }
 
@@ -816,7 +888,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
      * f0 -> "this"
     */
     @Override
-    public String visit(ThisExpression n, String argu) throws Exception {
+    public String visit(ThisExpression n, String argu) throws Exception
+    {
         return n.f0.accept(this, argu);
     }
 
@@ -829,7 +902,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f4 -> "]"
     */
     @Override
-    public String visit(BooleanArrayAllocationExpression n, String argu) throws Exception {
+    public String visit(BooleanArrayAllocationExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -847,7 +921,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f4 -> "]"
     */
     @Override
-    public String visit(IntegerArrayAllocationExpression n, String argu) throws Exception {
+    public String visit(IntegerArrayAllocationExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -864,7 +939,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f3 -> ")"
     */
     @Override
-    public String visit(AllocationExpression n, String argu) throws Exception {
+    public String visit(AllocationExpression n, String argu) throws Exception
+    {
         
         String type = n.f1.accept(this, argu);
 		String dim = get_dim(type);
@@ -883,7 +959,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		emit("%" + _h2 + " = getelementptr " + dim + ", " + dim + "* @." + type + "_vtable, i32 0, i32 0\n");
 
 		emit_tabs();
-		emit("store i8** %" + _h2 + ", i8*** %" + _h1 + "\n");
+		emit("store i8** %" + _h2 + ", i8*** %" + _h1 + "\n\n");
 
 
 		// return register where the calloc was done
@@ -895,7 +971,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f1 -> Clause()
     */
     @Override
-    public String visit(NotExpression n, String argu) throws Exception {
+    public String visit(NotExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);
@@ -908,7 +985,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     * f2 -> ")"
     */
     @Override
-    public String visit(BracketExpression n, String argu) throws Exception {
+    public String visit(BracketExpression n, String argu) throws Exception
+    {
         String _ret=null;
         n.f0.accept(this, argu);
         n.f1.accept(this, argu);

@@ -125,6 +125,7 @@ public class SymbolTable {
             
         }
         
+        
         return true;
 
     }
