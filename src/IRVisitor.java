@@ -25,6 +25,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		this.st = st;
 	}
 
+    private void print_error(String str)
+    {
+        System.err.println(str);
+    }
 	
     private void emit(String text)
     {
@@ -51,11 +55,6 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     private String new_reg()
     {
         return "_" + reg_counter++;
-    }
-
-    private String new_reg(String prefix)
-    {
-        return "_" + prefix + "_" + reg_counter++;
     }
 
     private String get_size(String type)
@@ -115,8 +114,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 	private void emit_variable(String size, String reg_cons, String name)
 	{
-		emit_with_tabs("store " + size + (reg_cons.startsWith("_") ? " %" : " ") + 
-			 reg_cons + ", " + size + "* %" + name + "\n\n");
+        String[] info = get_variable_info(reg_cons);
+
+		emit_with_tabs("store " + size + (info[2].equals("literal") ? " " : " %") + 
+                        info[0] + ", " + size + "* %" + get_variable_info(name)[0] + "\n\n");
 	}
 
 	private String get_dim(String _class)
@@ -156,14 +157,16 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		emit_with_tabs("%" + _h1 + " = getelementptr i8, i8* %this, i32 " + offset + "\n");
 
 		emit_with_tabs("%" + _h2 + " = bitcast i8* %" + _h1 + " to " + size + "*\n");
+
 		if (rvlaue)
 		{
 			String _ret = new_reg();
 			emit_with_tabs("%" + _ret + " = load " + size + ", " + size + "* %" + _h2 + "\n\n");
 
-			return _ret;
+			return variable_info(_ret, size, var.type());
 		}
-		return _h2;
+
+		return variable_info(_h2, size, var.type());
 	}
 
 	private String load_local(String name, String scope) throws Exception
@@ -173,21 +176,48 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String size = get_size(type);
 
         emit_with_tabs("%" + _ret + " = load " + size + ", " + size + "* %" + name + "\n");
-        return _ret;
+
+        return variable_info(_ret, size, type);
+    }
+
+    private String[] get_variable_info(String var)
+    {
+        return var.split(st.class_delimiter);
     }
 
     private String emit_binary_expr(String left, String right, String code)
     {
+        String[] info_left = get_variable_info(left);
+        String[] info_right = get_variable_info(right);
+
         String _ret = new_reg();
 
         emit_with_tabs("%" + _ret + " = " + code + " i32 " + 
-                    (left.startsWith("_") ? "%" : "") + left + ", " +
-                    (right.startsWith("_") ? "%" : "") + right + "\n\n");
+                    (info_left[2].equals("literal") ? "" : "%") + info_left[0] + ", " +
+                    (info_right[2].equals("literal")? "" : "%") + info_right[0] + "\n\n");
             
-        return _ret;
+        return variable_info(_ret, "i32", "int");
     }
     
+    private String variable_info(String name, String size, String type)
+    {
+        return name + st.class_delimiter + size + st.class_delimiter + type;
+    }
 
+    private String get_class(String scope)
+    {
+        return scope.split(st.class_delimiter)[0];
+    }
+
+    private String get_function(String scope) throws Exception
+    {
+        if (!scope.contains(st.class_delimiter))
+            throw new Exception(scope + " does not contain a function!");
+
+        return scope.split(st.class_delimiter)[1];
+    }
+
+    
     //  ------------------------------------------------------------------------------
     //  ------------------------------------------------------------------------------
 
@@ -373,10 +403,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 
         String _ret = n.f10.accept(this, argu + st.class_delimiter + name);
+        String[] info = get_variable_info(_ret);
 
         emit("\n");
-		emit_with_tabs("ret " + size + (_ret.startsWith("_") ? " %" : " ") + _ret + "\n");
-
+		emit_with_tabs("ret " + size + (info[2].equals("literal") ? " " : " %") + info[0] + "\n");
 		emit("}\n\n");
 		tab_count--;
 
@@ -440,13 +470,6 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 
     @Override
-    public String visit(ArrayType n, String argu) throws Exception
-    {
-        return n.f0.accept(this, argu);
-    }
-
-
-    @Override
     public String visit(BooleanArrayType n, String argu) throws Exception
     {
         return "boolean[]";
@@ -489,9 +512,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         String reg_cons = n.f2.accept(this, argu);
 		
-		String reg = st.is_field(name, argu) ?
-                    load_field(name, argu.split(st.class_delimiter)[0], false) :
-                    name;
+		String reg = st.is_field(name, argu) ? load_field(name, get_class(argu), false) : name;
 
 		emit_variable(get_size(type), reg_cons, reg);
 
@@ -709,14 +730,44 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(MessageSend n, String argu) throws Exception
     {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
-        n.f5.accept(this, argu);
-        return _ret;
+        // String object_reg = n.f0.accept(this, argu);
+        
+        // String fun_name = n.f2.accept(this, argu);
+        
+        // String expr_list_regs = n.f4.accept(this, argu);
+        
+        // // %_3 = bitcast i8* %_0 to i8***
+        // // %_4 = load i8**, i8*** %_3
+        // // %_5 = getelementptr i8*, i8** %_4, i32 0
+        // // %_6 = load i8*, i8** %_5
+        // // %_7 = bitcast i8* %_6 to i32 (i8*)*
+        // // %_8 = call i32 %_7(i8* %_0)
+
+        // // offset on getelementptr is the asscending number of the function
+        // // ie its the 5'th declared function of the class
+        // String num = "";
+        // // int _num = 0;
+        // // for ()
+
+        // String ret_size = ""; // function return size
+
+        // String _h1 = new_reg();
+        // String _h2 = new_reg();
+        // String _h3 = new_reg();
+        // String _h4 = new_reg();
+        // String _h5 = new_reg();
+        // String _ret = new_reg();
+
+        // emit_with_tabs(_h1 + " = bitcast i8* %" + object_reg + " to i8***\n");
+        // emit_with_tabs(_h2 + " = load i8**, i8*** %" + _h1 + "\n");
+        // emit_with_tabs(_h3 + " = getelementptr, i8** %" + _h2 + ", i32" + num + "\n");
+        // emit_with_tabs(_h4 + " = load i8**, i8*** %" + _h3 + " to i8***\n");
+        // emit_with_tabs(_h5 + " = bitcast i8* %" + _h4 + " to ι32 (i8*)*\n");
+        // emit_with_tabs(_ret + " = call " + ret_size + " %" + _h5 + "(" + expr_list_regs + ")\n");
+        
+
+        // return _ret;
+        return null;
     }
 
 
@@ -784,11 +835,11 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     {
         String _ret = n.f0.accept(this, argu);
 		
-        return n.f0.which == 3 
-				? st.is_field(_ret, argu) ? 
-                    load_field(_ret, argu.split(st.class_delimiter)[0], true) : 
-                    "%" + load_local(_ret, argu) 
-				: _ret;
+        if (n.f0.which != 3)
+            return _ret;
+
+		return st.is_field(_ret, argu) ? load_field(_ret, get_class(argu), true) : load_local(_ret, argu);
+	
     }
 
 
@@ -798,7 +849,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(IntegerLiteral n, String argu) throws Exception
     {
-        return n.f0.toString();
+        return variable_info(n.f0.toString(), "i32", "literal");
     }
 
 
@@ -808,7 +859,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(TrueLiteral n, String argu) throws Exception
     {
-        return "1";
+        return variable_info("1", "i1", "literal");
     }
 
 
@@ -818,7 +869,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(FalseLiteral n, String argu) throws Exception
     {
-        return "0";
+        return variable_info("0", "i1", "literal");
     }
 
 
@@ -838,7 +889,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(ThisExpression n, String argu) throws Exception
     {
-        return n.f0.accept(this, argu);
+        return variable_info("this", "_IntegerArray", get_class(argu));
     }
 
     
@@ -858,7 +909,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);
         n.f4.accept(this, argu);
-        return _ret;
+        return variable_info(_ret, "_BooleanArray*", "boolean[]");
     }
 
 
@@ -878,7 +929,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         n.f2.accept(this, argu);
         n.f3.accept(this, argu);
         n.f4.accept(this, argu);
-        return _ret;
+        return variable_info(_ret, "_IntegerArray*", "int[]");
     }
 
 
@@ -909,7 +960,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 
 		// return register where the calloc was done
-        return _ret; 
+        return variable_info(_ret, "i8*", type); 
     }
 
     
@@ -920,10 +971,15 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(NotExpression n, String argu) throws Exception
     {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return _ret;
+        String reg = n.f1.accept(this, argu);
+        String[] info = get_variable_info(reg);
+
+        // produce code to negate _ret, just a xor 
+        String _ret = new_reg();
+        emit("\t%" + _ret + " = xor i1 1, " + (info[2].equals("literal") ? "" : "%") + info[0] + "\n\n");
+
+        // return reg for negation
+        return variable_info(_ret, "i1", "boolean");
     }
 
 
@@ -935,11 +991,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(BracketExpression n, String argu) throws Exception
     {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        return _ret;
+        return n.f1.accept(this, argu);
     }
 
 }
