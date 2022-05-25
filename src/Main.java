@@ -35,17 +35,13 @@ public class Main {
                 AnalysisVisitor anal = new AnalysisVisitor(st);
                 root.accept(anal, null);
 
-                System.err.println("Program is semantically correct.\n");
-
-                
-
-                // st.print_offsets();
-
-                // st.print();
+                System.err.println("Program is semantically correct.");
                 
 
                 IRVisitor ir = new IRVisitor(st);
                 root.accept(ir, null);
+
+                System.err.println("LLVM code generated succesfully.\n");
                 
 
             }

@@ -112,12 +112,21 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         emit("\n");
     }
 
+    private boolean is_literal(String[] info)
+    {
+        return info[2].equals("literal");
+    }
+
+    private String str_reg_cons(String var)
+    {
+        String[] info = get_variable_info(var);
+        return (is_literal(info) ? " " : " %") + info[0];
+    }
+
 	private void emit_variable(String size, String reg_cons, String name)
 	{
-        String[] info = get_variable_info(reg_cons);
-
-		emit_with_tabs("store " + size + (info[2].equals("literal") ? " " : " %") + 
-                        info[0] + ", " + size + "* %" + get_variable_info(name)[0] + "\n\n");
+		emit_with_tabs("store " + size + str_reg_cons(reg_cons) + 
+                        ", " + size + "* %" + get_variable_info(name)[0] + "\n\n");
 	}
 
 	private String get_dim(String _class)
@@ -187,14 +196,11 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
     private String emit_binary_expr(String left, String right, String code)
     {
-        String[] info_left = get_variable_info(left);
-        String[] info_right = get_variable_info(right);
-
         String _ret = new_reg();
 
-        emit_with_tabs("%" + _ret + " = " + code + " i32 " + 
-                    (info_left[2].equals("literal") ? "" : "%") + info_left[0] + ", " +
-                    (info_right[2].equals("literal")? "" : "%") + info_right[0] + "\n\n");
+        emit_with_tabs("%" + _ret + " = " + code + " i32" + 
+                    str_reg_cons(left) + "," +
+                    str_reg_cons(right) + "\n\n");
             
         return variable_info(_ret, "i32", "int");
     }
@@ -403,10 +409,9 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 
         String _ret = n.f10.accept(this, argu + st.class_delimiter + name);
-        String[] info = get_variable_info(_ret);
 
         emit("\n");
-		emit_with_tabs("ret " + size + (info[2].equals("literal") ? " " : " %") + info[0] + "\n");
+		emit_with_tabs("ret " + size + str_reg_cons(_ret) + "\n");
 		emit("}\n\n");
 		tab_count--;
 
@@ -902,13 +907,15 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     */
     @Override
     public String visit(BooleanArrayAllocationExpression n, String argu) throws Exception
-    {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        n.f2.accept(this, argu);
-        n.f3.accept(this, argu);
-        n.f4.accept(this, argu);
+    {        
+        String reg = n.f3.accept(this, argu);
+        
+        // check value of reg > 0
+        String _cond = new_reg();
+        emit("\t%" + _cond + " = icmp sge i32" + str_reg_cons(reg) + ", 0\n");   
+
+        String _ret = new_reg();
+
         return variable_info(_ret, "_BooleanArray*", "boolean[]");
     }
 
@@ -972,11 +979,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     public String visit(NotExpression n, String argu) throws Exception
     {
         String reg = n.f1.accept(this, argu);
-        String[] info = get_variable_info(reg);
 
         // produce code to negate _ret, just a xor 
         String _ret = new_reg();
-        emit("\t%" + _ret + " = xor i1 1, " + (info[2].equals("literal") ? "" : "%") + info[0] + "\n\n");
+        emit("\t%" + _ret + " = xor i1 1," + str_reg_cons(reg) + "\n\n");
 
         // return reg for negation
         return variable_info(_ret, "i1", "boolean");
