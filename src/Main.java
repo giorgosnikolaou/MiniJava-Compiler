@@ -3,6 +3,7 @@ import visitor.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import SymbolTable.SymbolTable;
@@ -14,6 +15,7 @@ public class Main {
             System.err.println("Usage: java Main <inputFile1> <inputFile2> ... <inputFileN>");
             System.exit(1);
         }
+        FileWriter writer = null;
 
         for (String arg : args)
         {
@@ -38,8 +40,9 @@ public class Main {
                 System.err.println("Program is semantically correct.");
                 
 
-                IRVisitor ir = new IRVisitor(st);
-                root.accept(ir, null);
+				writer = new FileWriter(arg.substring(arg.lastIndexOf('/') + 1, arg.lastIndexOf('.')) + ".ll");
+                IRVisitor ir = new IRVisitor(st, writer);
+                root.accept(ir, null);   
 
                 System.err.println("LLVM code generated succesfully.\n");
                 
@@ -60,6 +63,7 @@ public class Main {
             finally{
                 try{
                     if(fis != null) fis.close();
+                    if (writer != null) writer.close();
                 }
                 catch(IOException ex){
                     System.err.println(ex.getMessage());

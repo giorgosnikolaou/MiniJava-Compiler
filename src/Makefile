@@ -11,7 +11,7 @@ compile:
 clean:
 	@rm -f *.class *~ $(SRC)MiniJavaParser* $(SRC)Token* $(SRC)ParseException.java $(LIBS)minijava-jtb.jj $(SRC)JavaCharStream.java
 	@rm -f $(SRC)SymbolTable/*.class
-	@rm -rf $(SRC)visitor $(SRC)syntaxtree.
+	@rm -rf $(SRC)visitor $(SRC)syntaxtree
 
 
 FILES = $(TESTS)Assign-error.java \
@@ -20,5 +20,6 @@ FILES = $(TESTS)Assign-error.java \
 		$(TESTS)InheritanceTest.java
 
 run: compile 
-	@java Main $(FILES)
+	@java Main $(TESTS)BrackeExpressionTest.java
 	@make -s clean
+

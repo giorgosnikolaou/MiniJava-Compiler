@@ -1,7 +1,10 @@
 import syntaxtree.*;
 import visitor.GJDepthFirst;
 import java.util.*;
-import java.util.stream.BaseStream;
+
+import javax.print.attribute.standard.PrinterInfo;
+
+import java.io.FileWriter;
 
 import SymbolTable.*;
 import SymbolTable.Class;
@@ -16,15 +19,18 @@ public class IRVisitor extends GJDepthFirst<String,String> {
    //
 
     SymbolTable st;
+	private FileWriter writer;
+
     private int label_counter = 0;
     private int reg_counter = 0;
 	private int tab_count = 0;
 	Map<String, String> classes_vt_size = new HashMap<String, String>();
     private String last_label = null;
 
-    public IRVisitor(SymbolTable st) 
+    public IRVisitor(SymbolTable st, FileWriter writer) 
     {
 		this.st = st;
+		this.writer = writer;
 	}
 
     private void print_error(String str)
@@ -32,24 +38,25 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         System.err.println(str);
     }
 	
-    private void emit_pure(String text)
+    private void emit_pure(String text) throws Exception
     {
         // write text to file 
-        System.out.print(text);
+        // System.err.print(text);
+        writer.write(text);
     }
 
-	private void emit_tabs()
+	private void emit_tabs() throws Exception
 	{
 		emit_pure("\t".repeat(tab_count));	
 	}
 
-    private void emit(String text)
+    private void emit(String text) throws Exception
     {
         emit_tabs();
         emit_pure(text + "\n");
     }
 
-    public void emit_label(String label)
+    public void emit_label(String label) throws Exception
     {
         last_label = label;
         emit_pure(label + ":\n");
@@ -73,7 +80,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
                 type.equals("int[]") ? "%_IntegerArray*" : "i8*";
     }
 
-    private void emit_vtable_functions(Class _class)
+    private void emit_vtable_functions(Class _class) throws Exception
     {
         int i = _class.vtable.size();
 
@@ -105,7 +112,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         
     }
 
-    private void emit_vtable()
+    private void emit_vtable() throws Exception
     {
         for (Map.Entry<String, Class> entry : st.classes.entrySet())
         {   
@@ -131,7 +138,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         return (is_literal(info) ? " " : " %") + info[0];
     }
 
-	private void emit_variable(String size, String reg_cons, String name)
+	private void emit_variable(String size, String reg_cons, String name) throws Exception
 	{
 		emit("store " + size + str_reg_cons(reg_cons) + 
                         ", " + size + "* %" + get_variable_info(name)[0] + "\n");
@@ -160,7 +167,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		return _ret;
 	}
 
-	private String load_field(String name, String _class, boolean rvlaue)
+	private String load_field(String name, String _class, boolean rvlaue) throws Exception
 	{
 		Class cl = st.get_class(_class);
 		Variable var = cl.get_variable(name);
@@ -202,7 +209,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         return var.split(st.class_delimiter);
     }
 
-    private String emit_binary_expr(String left, String right, String code)
+    private String emit_binary_expr(String left, String right, String code) throws Exception
     {
         String _ret = new_reg();
 
@@ -657,7 +664,6 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String reg = n.f2.accept(this, argu);
 
 		emit("call void (i32) @print_int(i32 " + str_reg_cons(reg) + ")\n");
-
 		return null;
     }
 
@@ -763,7 +769,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     }
 
 
-    private String get_array_length(String reg)
+    private String get_array_length(String reg) throws Exception
     {
         String[] info = get_variable_info(reg);
         String base_type = info[1].contains("Int") ? "%_IntegerArray" : "%_BooleanArray";
@@ -781,7 +787,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         return _ret;
     }
 
-    private void bounds_check(String reg1, String reg2)
+    private void bounds_check(String reg1, String reg2) throws Exception
     {
         String size = str_reg_cons(reg2);
 
@@ -813,7 +819,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         emit_label(cont_label);
     }
 
-    private String get_arr_pos(String reg1, String reg2)
+    private String get_arr_pos(String reg1, String reg2) throws Exception
     {
         String[] info = get_variable_info(reg1);
         String base_type = info[1].contains("Int") ? "%_IntegerArray" : "%_BooleanArray";
@@ -873,6 +879,21 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         return variable_info(get_array_length(reg), "i32", "int");
     }
 
+
+    private int find_vtable_offset(String _class, String _func) throws Exception
+    {
+        int i = 0;
+        for (Map.Entry<String, String> entry : st.get_class(_class).vtable.entrySet())
+        {
+            String fun = entry.getKey();
+            if (fun.equals(_func))
+
+                return i * 8;
+            i++;
+        }
+        
+        throw new Exception("SHOULD NEVER GET HERE");
+    } 
     
     /**
      * f0 -> PrimaryExpression()
@@ -885,46 +906,54 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(MessageSend n, String argu) throws Exception
     {
-        // String object_reg = n.f0.accept(this, argu);
+        String object_reg = n.f0.accept(this, argu);
+        String[] info = get_variable_info(object_reg);
         
-        // String fun_name = n.f2.accept(this, argu);
+        String fun_name = n.f2.accept(this, argu);
         
-        // String expr_list_regs = n.f4.accept(this, argu);
+        String expr_list_regs = n.f4.present() ? n.f4.accept(this, argu) : "";
         
-        // // %_3 = bitcast i8* %_0 to i8***
-        // // %_4 = load i8**, i8*** %_3
-        // // %_5 = getelementptr i8*, i8** %_4, i32 0
-        // // %_6 = load i8*, i8** %_5
-        // // %_7 = bitcast i8* %_6 to i32 (i8*)*
-        // // %_8 = call i32 %_7(i8* %_0)
+        // offset on getelementptr is the asscending number of the function
+        // ie its the 5'th declared function of the class
+        Function fun = st.get_function(info[2], fun_name);
+        // String num = "" + fun.offset() / 8;
+        String num = "" + find_vtable_offset(info[2], fun_name) / 8;
+        String ret_size = get_size(fun.type()); 
 
-        // // offset on getelementptr is the asscending number of the function
-        // // ie its the 5'th declared function of the class
-        // String num = "";
-        // // int _num = 0; // offset / 8
+        String _h1 = new_reg();
+        String _h2 = new_reg();
+        String _h3 = new_reg();
+        String _h4 = new_reg();
+        String _h5 = new_reg();
+        String _ret = new_reg();
 
-        // String ret_size = ""; // function return size
+        // Get vtable
+        emit("%" + _h1 + " = bitcast i8* %" + info[0] + " to i8***");
+        emit("%" + _h2 + " = load i8**, i8*** %" + _h1 + "");
+        emit("%" + _h3 + " = getelementptr i8*, i8** %" + _h2 + ", i32 " + num);
+        emit("%" + _h4 + " = load i8*, i8** %" + _h3);
 
-        // String _h1 = new_reg();
-        // String _h2 = new_reg();
-        // String _h3 = new_reg();
-        // String _h4 = new_reg();
-        // String _h5 = new_reg();
-        // String _ret = new_reg();
+        String ar = fun.get_arguments_types();
+        String[] args = ar.length() > 0 ? ar.split(",") : new String[0];
 
-        // emit(_h1 + " = bitcast i8* %" + object_reg + " to i8***\n");
-        // emit(_h2 + " = load i8**, i8*** %" + _h1 + "\n");
-        // emit(_h3 + " = getelementptr, i8** %" + _h2 + ", i32" + num + "\n");
-        // emit(_h4 + " = load i8**, i8*** %" + _h3 + " to i8***\n");
-        // emit(_h5 + " = bitcast i8* %" + _h4 + " to ι32 (i8*)*\n");
-        // emit(_ret + " = call " + ret_size + " %" + _h5 + "(" + expr_list_regs + ")\n");
+        String new_args = "i8*";
+        for (String arg : args)
+            new_args += ", " + get_size(arg);
         
 
-        // return _ret;
-        return null;
+        emit("%" + _h5 + " = bitcast i8* %" + _h4 + " to " + ret_size + " (" + new_args + ")*");
+        emit("%" + _ret + " = call " + ret_size + " %" + _h5 + "(i8*" + str_reg_cons(object_reg) + 
+            (expr_list_regs.length() != 0 ? "," + expr_list_regs : "") + ")");
+
+
+        return variable_info(_ret, ret_size, fun.type());
     }
 
-
+    private String get_size_addr(String reg)
+    {
+        String[] info = get_variable_info(reg);
+        return info[1] + str_reg_cons(reg);
+    }
     /**
      * f0 -> Expression()
     * f1 -> ExpressionTail()
@@ -932,10 +961,12 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(ExpressionList n, String argu) throws Exception
     {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return _ret;
+        String reg = get_size_addr(n.f0.accept(this, argu));
+
+        if (n.f1 != null) 
+            reg += n.f1.accept(this, argu);
+
+        return reg;
     }
 
 
@@ -945,7 +976,12 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(ExpressionTail n, String argu) throws Exception
     {
-        return n.f0.accept(this, argu);
+        String ret = "";
+        
+        for (Node node : n.f0.nodes) 
+            ret += ", " + get_size_addr(node.accept(this, argu));
+        
+        return ret;
     }
 
 
@@ -956,10 +992,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(ExpressionTerm n, String argu) throws Exception
     {
-        String _ret=null;
-        n.f0.accept(this, argu);
-        n.f1.accept(this, argu);
-        return _ret;
+        return n.f1.accept(this, argu);
     }
 
 
@@ -1047,7 +1080,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     }
 
 
-    private String allocate_arr(String reg, String size, String type)
+    private String allocate_arr(String reg, String size, String type) throws Exception
     {
         String value_size = size.equals("_BooleanArray") ? "1" : "4";
 
@@ -1116,7 +1149,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String reg = n.f3.accept(this, argu);
         String size = str_reg_cons(reg);
 
-        return variable_info(allocate_arr(reg, size, "_BooleanArray"), "_BooleanArray*", "boolean[]");
+        return variable_info(allocate_arr(reg, size, "_BooleanArray"), "%_BooleanArray*", "boolean[]");
     }
 
 
@@ -1134,7 +1167,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String size = str_reg_cons(reg);
         
 
-        return variable_info(allocate_arr(reg, size, "_IntegerArray"), "_IntegerArray*", "int[]");
+        return variable_info(allocate_arr(reg, size, "_IntegerArray"), "%_IntegerArray*", "int[]");
 
     }
 
