@@ -46,7 +46,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     private void emit(String text)
     {
         emit_tabs();
-        emit_pure(text);
+        emit_pure(text + "\n");
     }
 
     public void emit_label(String label)
@@ -89,7 +89,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
             Function _fun = st.get_class(cl).get_function(fun);
 
             emit_pure("i8* bitcast (");
-            emit(get_size(_fun.type()) + " (i8*"); // return type, "this" argument
+            emit_pure(get_size(_fun.type()) + " (i8*"); // return type, "this" argument
 
             for (Variable arg : _fun.get_arg_info())
                 emit_pure(", " + get_size(arg.type()));
@@ -134,7 +134,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 	private void emit_variable(String size, String reg_cons, String name)
 	{
 		emit("store " + size + str_reg_cons(reg_cons) + 
-                        ", " + size + "* %" + get_variable_info(name)[0] + "\n\n");
+                        ", " + size + "* %" + get_variable_info(name)[0] + "\n");
 	}
 
 	private String get_dim(String _class)
@@ -171,14 +171,14 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		String _h1 = new_reg();
 		String _h2 = new_reg();
 
-		emit("%" + _h1 + " = getelementptr i8, i8* %this, i32 " + offset + "\n");
+		emit("%" + _h1 + " = getelementptr i8, i8* %this, i32 " + offset);
 
-		emit("%" + _h2 + " = bitcast i8* %" + _h1 + " to " + size + "*\n");
+		emit("%" + _h2 + " = bitcast i8* %" + _h1 + " to " + size + "*");
 
 		if (rvlaue)
 		{
 			String _ret = new_reg();
-			emit("%" + _ret + " = load " + size + ", " + size + "* %" + _h2 + "\n\n");
+			emit("%" + _ret + " = load " + size + ", " + size + "* %" + _h2 + "\n");
 
 			return variable_info(_ret, size, var.type());
 		}
@@ -192,7 +192,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String type = st.resolve_var_type(name, scope);
         String size = get_size(type);
 
-        emit("%" + _ret + " = load " + size + ", " + size + "* %" + name + "\n");
+        emit("%" + _ret + " = load " + size + ", " + size + "* %" + name);
 
         return variable_info(_ret, size, type);
     }
@@ -208,7 +208,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         emit("%" + _ret + " = " + code + " i32" + 
                     str_reg_cons(left) + "," +
-                    str_reg_cons(right) + "\n\n");
+                    str_reg_cons(right) + "\n");
             
         return variable_info(_ret, "i32", "int");
     }
@@ -419,7 +419,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String _ret = n.f10.accept(this, argu + st.class_delimiter + name);
 
         emit_pure("\n");
-		emit("ret " + size + str_reg_cons(_ret) + "\n");
+		emit("ret " + size + str_reg_cons(_ret));
 		emit_pure("}\n\n");
 		tab_count--;
 
@@ -566,7 +566,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String base_size = type.contains("int") ? "i32" : "i1";
         
         emit("store " + base_size + str_reg_cons(reg_cons) + ", " + base_size +
-             "* %" + _h1 + "\n");
+             "* %" + _h1);
 
         return null;
     }
@@ -593,15 +593,15 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String cont_label = new_label(); 
 
 
-        emit("br i1" + cond + ", label %" + then_label + ", label %" + else_label + "\n\n");
+        emit("br i1" + cond + ", label %" + then_label + ", label %" + else_label + "\n");
 
         emit_label(then_label);
         n.f4.accept(this, argu);
-        emit("br label %" + cont_label + "\n\n");
+        emit("br label %" + cont_label + "\n");
 
         emit_label(else_label);
         n.f6.accept(this, argu);
-        emit("br label %" + cont_label + "\n\n");
+        emit("br label %" + cont_label + "\n");
 
         emit_label(cont_label);
 
@@ -624,19 +624,19 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String cont_label = new_label(); 
 
 
-        emit("br label %" + start_label + "\n");
+        emit("br label %" + start_label);
         emit_label(start_label);
 
         String cond_reg = n.f2.accept(this, argu);       
 
         emit("br i1" + str_reg_cons(cond_reg) + ", label %" + loop_label +
-             ", label %" + cont_label + "\n\n");
+             ", label %" + cont_label + "\n");
         
              
         emit_label(loop_label);
         n.f4.accept(this, argu);
 
-        emit("br label %" + start_label + "\n\n");
+        emit("br label %" + start_label + "\n");
 
         emit_label(cont_label);
 
@@ -656,7 +656,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     {
         String reg = n.f2.accept(this, argu);
 
-		emit("call void (i32) @print_int(i32 " + str_reg_cons(reg) + ")\n\n");
+		emit("call void (i32) @print_int(i32 " + str_reg_cons(reg) + ")\n");
 
 		return null;
     }
@@ -677,14 +677,14 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String is_false_label = new_label();
         String cont_label = new_label();
 
-        emit("br i1" + reg1_n + ", label %" + is_true_label + ", label %" + is_false_label + "\n\n");
+        emit("br i1" + reg1_n + ", label %" + is_true_label + ", label %" + is_false_label + "\n");
 
         emit_label(is_false_label);
-        emit("br label %" + cont_label + "\n\n");
+        emit("br label %" + cont_label + "\n");
 
         emit_label(is_true_label);
         String reg2 = n.f2.accept(this, argu);
-        emit("br label %" + cont_label + "\n\n");
+        emit("br label %" + cont_label + "\n");
 
 
         String prev_label = last_label;
@@ -692,7 +692,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         String _ret = new_reg();
         emit("%" + _ret + " = phi i1 [" + str_reg_cons(reg2) + ", %" + prev_label + 
-             " ], [ 0, %" + is_false_label + " ]\n");
+             " ], [ 0, %" + is_false_label + " ]");
 
         
 
@@ -712,7 +712,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String reg2 = n.f2.accept(this, argu);
 
         String _ret = new_reg();
-        emit("%" + _ret + " = icmp slt i32" + str_reg_cons(reg1) + ", " + str_reg_cons(reg2) + "\n");   
+        emit("%" + _ret + " = icmp slt i32" + str_reg_cons(reg1) + ", " + str_reg_cons(reg2));   
 
         return variable_info(_ret, "i1", "boolean");
     }
@@ -774,9 +774,9 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         
         // get the first field of the struct, the array's length
         emit("%" + _h + " = getelementptr " + base_type + ", " + info[1] 
-                        + " %" + info[0] + ", i32 0, i32 0\n");
+                        + " %" + info[0] + ", i32 0, i32 0");
         
-        emit("%" + _ret + " = load i32, i32* %" + _h + "\n\n");
+        emit("%" + _ret + " = load i32, i32* %" + _h + "\n");
 
         return _ret;
     }
@@ -789,24 +789,24 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         // Possibly replace with binary and that will be implemented
         String neg_check = new_reg();
-        emit("%" + neg_check + " = icmp sge i32" + size + ", 0\n");   
+        emit("%" + neg_check + " = icmp sge i32" + size + ", 0");   
 
         String length_check = new_reg();
-        emit("%" + length_check + " = icmp slt i32" + size + ", %" + length_reg + "\n");   
+        emit("%" + length_check + " = icmp slt i32" + size + ", %" + length_reg);   
 
         String cond = new_reg();
-        emit("%" + cond + " = and i1 %" + neg_check + ", %" + length_check + "\n");
+        emit("%" + cond + " = and i1 %" + neg_check + ", %" + length_check);
 
         String error_label = new_label();
         String cont_label = new_label();
 
-        emit("br i1 %" + cond + ", label %" + cont_label + ", label %" + error_label + "\n\n");
+        emit("br i1 %" + cond + ", label %" + cont_label + ", label %" + error_label + "\n");
 
 
         emit_label(error_label);
 
-        emit("\n\tcall void @throw_oob()\n");
-        emit("br label %" + cont_label + "\n\n");
+        emit("\n\tcall void @throw_oob()");
+        emit("br label %" + cont_label + "\n");
 
 
         // Within bounds
@@ -820,15 +820,15 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String size = info[1].contains("Int") ? "i32" : "i1";
 
         String _h1 = new_reg();
-        emit("%" + _h1 + " = getelementptr " + base_type + ", " + base_type + "* %" +
-            info[0] + ", i32 0, i32 1\n");
+        emit("%" + _h1 + " = getelementptr " + base_type + ", " + 
+             base_type + "* %" + info[0] + ", i32 0, i32 1");
 
         String _h2 = new_reg();
-        emit("%" + _h2 + " = load " + size + "*, " + size + "** %" + _h1 + "\n");
+        emit("%" + _h2 + " = load " + size + "*, " + size + "** %" + _h1);
 
         String _h3 = new_reg();
-        emit("%" + _h3 + " = getelementptr " + size + ", " + size + "* %" + _h2 + ", i32" 
-            + str_reg_cons(reg2) + "\n");
+        emit("%" + _h3 + " = getelementptr " + size + ", " + size + "* %" 
+             + _h2 + ", i32" + str_reg_cons(reg2));
 
         return _h3;
     }
@@ -854,7 +854,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String size = get_size(type);
 
         String _ret = new_reg();
-        emit("%" + _ret + " = load " + size + ", " + size + "* %" + _h3 + "\n");
+        emit("%" + _ret + " = load " + size + ", " + size + "* %" + _h3);
         
         return variable_info(_ret, size, type);
     }
@@ -1053,7 +1053,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         // check value of reg > 0
         String _cond = new_reg();
-        emit("%" + _cond + " = icmp sge i32" + size + ", 0\n");   
+        emit("%" + _cond + " = icmp sge i32" + size + ", 0");   
 
         String error_label = new_label();
         String cont_label = new_label();
@@ -1062,8 +1062,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         emit_label(error_label);
 
-        emit("\n\tcall void @throw_oob()\n");
-        emit("br label %" + cont_label + "\n\n");
+        emit("\n\tcall void @throw_oob()");
+        emit("br label %" + cont_label + "\n");
 
 
         // Allocate space
@@ -1074,14 +1074,14 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String _ret = new_reg();
 
         // create array struct
-        emit("%" + _h + " = call i8* @calloc(i32 1, i32 12)\n");
-        emit("%" + _ret + " = bitcast i8* %" + _h + " to %" + type + "*\n");
+        emit("%" + _h + " = call i8* @calloc(i32 1, i32 12)");
+        emit("%" + _ret + " = bitcast i8* %" + _h + " to %" + type + "*");
 
         // get the first field of the struct, the array's length
         emit("%" + _h1 + " = getelementptr %" + type + ", %" + type + "* %" 
-                        + _ret + ", i32 0, i32 0\n");
+             + _ret + ", i32 0, i32 0");
         // Store length on that address
-        emit("store i32" + size + ", i32* %" + _h1 + "\n");
+        emit("store i32" + size + ", i32* %" + _h1);
 
 
         String _h2 = new_reg();
@@ -1092,13 +1092,13 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String size_type = type.contains("Int") ? "i32" : "i1";
 
         // calloc array
-        emit("%" + _h2 + " = call i8* @calloc(i32 " + value_size + ", i32 " + size + ")\n");
-        emit("%" + _h3 + " = bitcast i8* %" + _h2 + " to " + size_type + "*\n");
+        emit("%" + _h2 + " = call i8* @calloc(i32 " + value_size + ", i32 " + size + ")");
+        emit("%" + _h3 + " = bitcast i8* %" + _h2 + " to " + size_type + "*");
         // Get pointer to the field of the struct that represents the array
         emit("%" + _h4 + " = getelementptr %" + type + ", %" + type + "* %" +
                         _ret + ", i32 0, i32 1\n");
 
-        emit("store " + size_type + "* %" + _h3 + ", " + size_type + "** %" + _h4 + "\n\n");
+        emit("store " + size_type + "* %" + _h3 + ", " + size_type + "** %" + _h4 + "\n");
 
         return _ret;
     }
@@ -1158,13 +1158,13 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		String _h1 = new_reg();
 		String _h2 = new_reg();
 
-		emit("%" + _ret + " = call i8* @calloc(i32 1, i32 " + size + ")\n");
+		emit("%" + _ret + " = call i8* @calloc(i32 1, i32 " + size + ")");
 		
-		emit("%" + _h1 + " = bitcast i8* %" + _ret + " to i8***\n");
+		emit("%" + _h1 + " = bitcast i8* %" + _ret + " to i8***");
 
-		emit("%" + _h2 + " = getelementptr " + dim + ", " + dim + "* @." + type + "_vtable, i32 0, i32 0\n");
+		emit("%" + _h2 + " = getelementptr " + dim + ", " + dim + "* @." + type + "_vtable, i32 0, i32 0");
 
-		emit("store i8** %" + _h2 + ", i8*** %" + _h1 + "\n\n");
+		emit("store i8** %" + _h2 + ", i8*** %" + _h1 + "\n");
 
 
 		// return register where the calloc was saved in
@@ -1183,7 +1183,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         // negation of bool is just a xor 
         String _ret = new_reg();
-        emit("%" + _ret + " = xor i1 1," + str_reg_cons(reg) + "\n\n");
+        emit("%" + _ret + " = xor i1 1," + str_reg_cons(reg) + "\n");
 
         return variable_info(_ret, "i1", "boolean");
     }
