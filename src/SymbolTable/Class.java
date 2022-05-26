@@ -145,6 +145,9 @@ public class Class {
     }
 
 
-    
+    public int get_size()
+    {
+        return offset_var + 8;
+    }
 
 }
