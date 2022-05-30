@@ -10,7 +10,7 @@ compile:
 
 clean:
 	@rm -f *.class *~ $(SRC)MiniJavaParser* $(SRC)Token* $(SRC)ParseException.java $(LIBS)minijava-jtb.jj $(SRC)JavaCharStream.java
-	@rm -f $(SRC)SymbolTable/*.class
+	@rm -f $(SRC)SymbolTable/*.class  offsets error_type
 	@rm -rf $(SRC)visitor $(SRC)syntaxtree
 
 

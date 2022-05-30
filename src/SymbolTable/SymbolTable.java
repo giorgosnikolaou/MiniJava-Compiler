@@ -103,6 +103,17 @@ public class SymbolTable {
 
         return var != null ? var.type() : resolve_var_type(name, _class.superclass());
     }
+    
+    public Variable resolve_var(String name, String class_name) throws Exception
+    {
+        if (class_name == null)
+            throw new Exception("Couldn't resolve " + name);
+        
+        Class _class = get_class(class_name);
+        Variable var = _class.get_variable(name);
+
+        return var != null ? var : resolve_var(name, _class.superclass());
+    }
 
     public boolean is_field(String name, String scope) throws Exception
     {

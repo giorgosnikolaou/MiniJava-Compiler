@@ -99,14 +99,14 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     private String load(String type, String reg) throws Exception
     {
         String _ret = new_reg();
-        emit("%" + _ret + " = load " + type + " , " + type + "*" + str_reg(reg));
+        emit("%" + _ret + " = load " + type + ", " + type + "*" + str_reg(reg));
         return _ret;
     }
 
     private String getelementptr(String type, String reg, String reg_cons) throws Exception
     {
         String _ret = new_reg();
-        emit("%" + _ret + " = getelementptr " + type + ", " + type + "*" + str_reg(reg) + ", i32 " + str_reg_cons(reg_cons));
+        emit("%" + _ret + " = getelementptr " + type + ", " + type + "*" + str_reg(reg) + ", i32" + str_reg_cons(reg_cons));
         return _ret;
     }
 
@@ -114,7 +114,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     {
         String _ret = new_reg();
         emit("%" + _ret + " = getelementptr " + type + ", " + type + "*" + str_reg(reg) + 
-            ", i32 " + str_reg_cons(reg_cons1) + ", i32 " + str_reg_cons(reg_cons2));
+            ", i32" + str_reg_cons(reg_cons1) + ", i32" + str_reg_cons(reg_cons2));
         return _ret;
     }
     
@@ -176,11 +176,6 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         emit_pure("\n");
     }
 
-	private void emit_variable(String size, String reg_cons, String name) throws Exception
-	{
-        store(size, reg_cons, get_variable_info(name)[0]);
-	}
-
 
 	private String init_local(String type, String name)
 	{
@@ -199,8 +194,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
 	private String load_field(String name, String _class, boolean rvlaue) throws Exception
 	{
-		Class cl = st.get_class(_class);
-		Variable var = cl.get_variable(name);
+		Variable var = st.resolve_var(name, _class);
 
 		String size = get_size(var.type());
 
@@ -210,7 +204,8 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		if (rvlaue)
 			return variable_info(load(size, _h2), size, var.type());
 		
-		return variable_info(_h2, size, var.type());
+        
+        return variable_info(_h2, size + '*', var.type());
 	}
 
 	private String load_local(String name, String scope) throws Exception
@@ -539,6 +534,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(MethodDeclaration n, String argu) throws Exception
     {
+        reg_counter = 0;
 		tab_count++;
 
 		// argu should have the class name 
@@ -662,15 +658,17 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 		// argu should be the scope we're in
         String name = n.f0.accept(this, argu);
 		String type = st.resolve_var_type(name, argu);
-
-        String reg_cons = n.f2.accept(this, argu);
 		
 		String reg = st.is_field(name, argu) ? 
                     load_field(name, get_class(argu), false) : 
                     variable_info(name, get_size(type), type);
+        
 
-		emit_variable(get_size(type), reg_cons, reg);
+        String reg_cons = n.f2.accept(this, argu);
 
+        store(get_size(type), reg_cons, reg);
+        
+        emit("");
         return null;
     }
 
@@ -694,6 +692,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
                     load_field(name, get_class(argu), false) : 
                     load_local(name, argu);
 
+        if (st.is_field(name, argu))
+            reg1 = variable_info(load(get_size(type), reg1), get_size(type), type);
+
+        
         String reg2 = n.f2.accept(this, argu);
 
         String _h = bounds_check(reg1, reg2);
@@ -701,8 +703,10 @@ public class IRVisitor extends GJDepthFirst<String,String> {
         String reg_cons = n.f5.accept(this, argu);
         store(type.contains("int") ? "i32" : "i1", reg_cons, _h);
 
+        emit("");
         return null;
     }
+
 
 
     /**
@@ -717,7 +721,6 @@ public class IRVisitor extends GJDepthFirst<String,String> {
     @Override
     public String visit(IfStatement n, String argu) throws Exception
     {
-        
         String cond_reg = n.f2.accept(this, argu);
         
         String then_label = new_label(); 
@@ -736,6 +739,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         label(cont_label);
 
+        emit("");
         return null;
     }
 
@@ -766,6 +770,7 @@ public class IRVisitor extends GJDepthFirst<String,String> {
 
         label(cont_label);
 
+        emit("");
         return null;
     }
 

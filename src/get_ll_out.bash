@@ -1,7 +1,9 @@
 ## Asserts output is correctly produced 
 
 # Prerequisites
-make compile
+java -jar ../libs/jtb132di.jar -te ../libs/minijava.jj
+java -jar ../libs/javacc5.jar ../libs/minijava-jtb.jj
+javac Main.java
 
 # Directories form which to choose test files from
 directory_default="../tests/llvm-examples/"
@@ -21,23 +23,16 @@ do
     name="$(basename -s .out "$file")"
     echo -e "\nTrying file: $name"    
 
-    find "$directory" -name "$name.java" -exec java Main '{}' 2> error_type > offsets \;
+    find "$directory" -name "$name.java" -exec java Main '{}' \;
     clang -Wno-everything "$name.ll" -o out1
 
-    ./out1 > results
-
-    if ! cmp -s results "$file" ; then
-        echo -e "${RED}Output is not correct${NC}"
-        # diff results "$file"
-        break
-    else
-        echo -e "${GREEN}Output is correct${NC}"
-    fi
+    ./out1 > 
 
 done
 
 echo ""
 
 # Remove produced files
-make clean 
-rm -f out1 results
+rm -f *.class *~ MiniJavaParser* Token* ParseException.java JavaCharStream.java ../libs/minijava-jtb.jj
+rm -f SymbolTable/*.class out1
+rm -r visitor syntaxtree

@@ -39,6 +39,7 @@ public class Main {
 
                 System.err.println("Program is semantically correct.");
                 
+                st.print_offsets();
 
 				writer = new FileWriter(arg.substring(arg.lastIndexOf('/') + 1, arg.lastIndexOf('.')) + ".ll");
                 IRVisitor ir = new IRVisitor(st, writer);

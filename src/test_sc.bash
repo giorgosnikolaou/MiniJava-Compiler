@@ -2,9 +2,7 @@
 ## ie if it's supposed to throw an error and our program doesn't or if it isn't supposed to and our program does  
 
 # Prerequisites
-java -jar ../libs/jtb132di.jar -te ../libs/minijava.jj
-java -jar ../libs/javacc5.jar ../libs/minijava-jtb.jj
-javac Main.java
+make compile
 
 # Directories form which to choose test files from
 directory_default=("../tests/")
@@ -46,6 +44,4 @@ done
 echo ""
 
 # Remove produced files
-rm -f *.class *~ MiniJavaParser* Token* ParseException.java JavaCharStream.java ../libs/minijava-jtb.jj
-rm -f SymbolTable/*.class error_type offsets
-rm -r visitor syntaxtree
+make clean
