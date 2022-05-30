@@ -30,7 +30,7 @@ In order to print the offsets in the required order, order of decleration is imp
     Needs the other two visitors to have already executed
 
 
-## Representation of array on LLVM code produced
+## Representation of arrays on LLVM code produced
 * ### Integer arrays
     Integer arrays are represented with the type structure `type { i32, i32* }` <br>
     The non pointer is where the size is stored <br>
