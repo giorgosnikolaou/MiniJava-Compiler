@@ -27,7 +27,7 @@ In order to print the offsets in the required order, order of decleration is imp
 
 * ### IRVisitor
     Performs the LLVM code generation </br>
-    Needs the other two visitors to have already executed
+    Requires the other two visitors to have already executed
 
 
 ## Representation of arrays on LLVM code produced
